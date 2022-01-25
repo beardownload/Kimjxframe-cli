@@ -1,0 +1,51 @@
+<style>
+
+</style>
+
+<script type="text/html">
+  <div>
+    <div>
+      首页
+    </div>
+    
+    <van-button type="primary" @click="$toast.fail('xxxx')">主要按钮</van-button>
+    <van-button type="info">信息按钮</van-button>
+    <van-button type="default">默认按钮</van-button>
+    <van-button type="warning">警告按钮</van-button>
+    <van-button type="danger">危险按钮</van-button>
+
+    <div>
+      <a class="j-btn j-btn-blue j-btn-normal" @click="$router.replace('test/pagetest2')">替换路由</a>
+      <a @click="$router.push('test/pagetest',true)">打开test/pagetest页面</a>
+    </div>
+
+    <el-row>
+      <el-button @click="$router.push('source/index',true)">当前链接跳转</el-button>
+      <el-button @click="App().F_historyGo()" type="primary">前进一个页面</el-button>
+      <el-button type="success" @click="test+=1">成功按钮{{ test }}</el-button>
+      <el-button type="info">信息按钮</el-button>
+      <el-button type="warning">警告按钮</el-button>
+      <el-button type="danger">危险按钮</el-button>
+    </el-row>
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    data(){
+      return {
+        test:0
+      }
+    },
+    
+    mounted() {
+      console.log('mounted')
+    },
+    
+    activated() {
+      console.log('activated')
+    }
+  })
+</script>

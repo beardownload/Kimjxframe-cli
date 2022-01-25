@@ -1,0 +1,61 @@
+<script type="text/html">
+  <div></div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    beforeMount() {
+      Vue.prototype.$Common = this
+    },
+    
+    mounted() {
+      
+    },
+
+    methods:{
+      // 定时任务自动清理
+      setIntervalTimer(timerId,app){
+        app.setIntervalTime[timerId] = true
+      },
+
+      // 定时任务自动清理
+      setTimeoutTimer(timerId,app){
+        app.setTimeoutTime[timerId] = true
+      },
+      
+      // 解析url
+      kgetUrlinfo(url){
+        const list = url.split('#')
+        
+        const r = {}
+        let arr = list[0].split('?')
+        
+        if (arr.length > 1) {
+          arr = arr[1].split('&')
+        } else {
+          arr = []
+        }
+        
+        for (let i = 0; i < arr.length; i++) {
+          const s = arr[i].split('=')
+        
+          if (s.length > 0 && s[0] !== '') {
+            if (s.length === 1) {
+              s[1] = ''
+            }
+        
+            r[s[0]] = decodeURIComponent(s[1])
+          }
+        }
+        
+        if (list.length > 1) {
+          r.URLHASH = kgetUrlinfo(list[1])
+        }
+        
+        return r
+      }
+    }
+  })
+</script>

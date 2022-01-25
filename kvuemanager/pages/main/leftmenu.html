@@ -1,0 +1,172 @@
+<style scoped>
+  .__CSSPRENAME__{
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script type="text/html">
+  <div ref="menuSwiper" class="swiper-container __CSSPRENAME__">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide" ref="container" style="height: auto;">
+        <div style="height: .3rem;"></div>
+        <div v-for="(item,key) in sessionAppList" :key="item.appid">
+          <__PATH__-leftmenuitem :item="item" K-VUE-COMPONENT />
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    inject:['getApp','App'],
+    
+    data(){
+      return {
+        // 动画锁
+        animateLock: false,
+        
+        // 动画是否阻塞
+        animateBlocked: false
+      }
+    },
+    
+    computed:mapState({
+      // 获取当前的激活窗口
+      sessionAppActive(state){
+        return state.sessionData.appActive
+      },
+      
+      // 会话列表
+      sessionAppList(state){
+        return state.sessionData.appList
+      }
+    }),
+    
+    watch:{
+      sessionAppActive(){
+        this.F_updateMenuSwiper()
+      },
+      
+      // 监听菜单数据变化
+      sessionAppList(){
+        // console.log('菜单监听变化 触发swiper更新')
+        this.F_updateMenuSwiper()
+      }
+    },
+    
+    mounted() {
+      Kim.use([
+        Kim.cdn.swiper.css,
+        Kim.cdn.swiper.js,
+      ],()=>{
+        this.F_initMenu()
+      })
+
+      // 注册到全局RootAoo
+      setTimeout(()=>{
+        this.$RootApp.$leftmenu = this
+      },100)
+    },
+    
+    methods:{
+      // 初始化菜单
+      F_initMenu(){
+        this.swiper = new Swiper(this.$refs.menuSwiper,{
+          direction: 'vertical',
+          slidesPerView: 'auto',
+          freeMode: true,
+          mousewheel: true,
+        });
+      },
+      
+      // 更新swiper
+      F_updateMenuSwiper(){
+        // console.log('更新菜单',this.animateLock,this.animateBlocked)
+        setTimeout(()=>{
+          if(this.animateBlocked){
+            this.animateLock = false
+            this.animateBlocked = false
+            this.F_updateMenuSwiper()
+          }
+        }, 2000)
+        
+        if(this.animateLock){
+          this.animateBlocked = true
+          return
+        }
+        
+        this.animateLock = true
+        
+        setTimeout(()=>{
+          const aim = this.$refs.menuSwiper
+          const container = this.$refs.container
+          const App = Kim.App[this.sessionAppActive]
+          
+          if(!App.$menu || !App.$menu.$refs.windowBTN){
+            this.animateLock = false
+            this.F_updateMenuSwiper()
+            return
+          }
+          
+          // console.log('111111更新触发获取的app',Kim.App[this.sessionAppActive])
+          const windowBTN = App.$menu.$refs.windowBTN
+          
+          this.swiper.update();
+          
+          if(aim.clientHeight - container.clientHeight > 0){
+            setTimeout(()=>{
+              this.animateLock = false
+              
+              // 被阻塞则触发再次运行更新
+              if(this.animateBlocked){
+                this.animateBlocked = false
+                this.F_updateMenuSwiper()
+              }
+            },600)
+            return false;
+          }
+  
+          var top        = windowBTN.offsetTop;
+          var translateY = this.swiper.getTranslate();
+  
+          //console.log([top,translateY]);
+          this.swiper.setTransition(600);
+  
+          if(-top > translateY){
+            //console.log(1);
+            this.swiper.setTranslate(-top);
+            setTimeout(()=>{
+              this.animateLock = false
+              
+              // 被阻塞则触发再次运行更新
+              if(this.animateBlocked){
+                this.animateBlocked = false
+                this.F_updateMenuSwiper()
+              }
+            },600)
+            return false;
+          }
+  
+          if(-top <= translateY - aim.clientHeight){
+            //console.log(2);
+            this.swiper.setTranslate(-top - windowBTN.clientHeight + aim.clientHeight);
+          }
+          
+          setTimeout(()=>{
+            this.animateLock = false
+            
+            // 被阻塞则触发再次运行更新
+            if(this.animateBlocked){
+              this.animateBlocked = false
+              this.F_updateMenuSwiper()
+            }
+          },600)
+        },1000);
+      }
+    }
+  })
+</script>

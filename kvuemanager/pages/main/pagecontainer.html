@@ -1,0 +1,184 @@
+<script type="text/html">
+  <component v-if="loaded" v-bind:is="componentUrl" :app="app" ref="container"></component>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    props:['app'],
+    inject:['RootApp'],
+    provide(){
+      return {
+        App:()=>{
+          return this
+        },
+        
+        // 获取当前窗口对象
+        getApp:()=>{
+          return this.app
+        },
+        
+        // 获取当前激活appid
+        getAppActive:()=>{
+          return this.appActive
+        }
+      }
+    },
+    
+    data(){
+      return {
+        // 当前页面组件
+        componentUrl:'',
+        
+        // 是否已加加载
+        loaded:false,
+        
+        // 拦截历史处理
+        undealHistory:false
+      }
+    },
+    
+    computed:mapState({
+      // 获取当前的激活窗口
+      sessionAppActive(state){
+        return state.sessionData.appActive
+      },
+      
+      // 会话列表
+      sessionAppList(state){
+        return state.sessionData.appList
+      }
+    }),
+    
+    watch:{
+      // 监听变化
+      componentUrl(){
+        this.F_clearTimer()
+      },
+      
+      // 监听app对象 更新会话数据
+      app:{
+        deep:true,
+        handler(newV){
+          // console.log('深度监听事件触发更新数据')
+          this.$emit('updatesession')
+        }
+      },
+      
+      // 监听地址发生改变
+      'app.url'(newV){
+        // console.log('监听地址发生改变',newV)
+        
+        if(!this.undealHistory){
+          this.app.historyIndex++
+          this.app.history[this.app.historyIndex] = newV
+        }
+        
+        this.app.sessionCache = {}
+        this.undealHistory = false
+        
+        // 自动处理标题和图标 对应到菜单
+        const menuItem = this.$RootApp.F_getMenuItemByUrl(newV)
+        if(menuItem.id !== -1){
+          this.app.icon = menuItem.icon
+          this.app.name = menuItem.name
+        }
+        
+        this.F_loadPage()
+      },
+      
+      // 监听激活
+      sessionAppActive(newV){
+        // console.log('激活监听')
+        if(newV == this.app.appid){
+          // console.log('激活监听成功',this.app.appid)
+          this.loaded = true
+        }
+      }
+    },
+    
+    beforeDestroy() {
+      this.F_clearTimer()
+      
+      // 删除全局挂载注册
+      delete Kim.App[this.app.appid]
+    },
+    
+    beforeMount() {
+      // 注册全局对象
+      Kim.App[this.app.appid] = this
+    },
+
+    mounted(){
+      // console.log('根对象',this.RootApp())
+      // console.log(this.app)
+      this.F_loadPage()
+      
+      // 当前窗口为激活状态 进行初始化
+      if(this.sessionAppActive == this.app.appid){
+        this.loaded = true
+      }
+    },
+
+    methods:{
+      // 清理定时任务
+      F_clearTimer(){
+        // 定时任务自动清理
+        for(let i in this.app.setIntervalTime){
+          clearInterval(i)
+          delete this.app.setIntervalTime[i]
+        }
+
+        for(let i in this.app.setTimeoutTime){
+          clearTimeout(i)
+          delete this.app.setTimeoutTime[i]
+        }
+      },
+      
+      // 加载页面
+      F_loadPage(){
+        // console.log('当前页面',this.app)
+        Kim.VUE_loadComponent(this.app.url,()=>{
+          this.componentUrl = Kim.VUE_RouterPathDeal(this.app.url)
+        })
+      },
+      
+      // 刷新页面
+      F_refreshPage(){
+        this.loaded = false
+        setTimeout(()=>{
+          this.loaded = true
+        },200)
+      },
+      
+      // 跳转地址
+      F_openUrl(url){
+        this.app.url = url
+      },
+      
+      // 地址前进到对应序号
+      F_historyGo(index = 1){
+        const _index = this.app.historyIndex + index
+        const historyLength = this.app.history.length
+        if(_index < 0 || _index > historyLength-1){
+          return
+        }
+        
+        this.undealHistory = true
+        this.app.historyIndex = _index
+        this.app.url = this.app.history[_index]
+      },
+      
+      // 地址后退
+      F_historyBack(){
+        this.F_historyGo(-1)
+      },
+      
+      // 关闭窗口
+      F_closeWin(){
+        this.$emit('closewin',this.app.appid)
+      }
+    }
+  });
+</script>

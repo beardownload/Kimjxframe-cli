@@ -1,0 +1,35 @@
+<style>
+
+</style>
+
+<script type="text/html">
+  <div>
+    测试页面2
+    
+    <div>
+      <a @click="$RootApp.F_openWin('test/pagetest')">打开新窗口页面</a>
+      
+      <a @click="getApp().url = 'test/pagetest'">当前窗口页面</a>
+      
+      <div class="test">
+        <a @click="App().F_historyBack()">返回上一页面</a>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    inject:['RootApp','getApp','App'],
+    
+    mounted() {
+      // console.log(this.$RootApp)
+    },
+    
+    methods:{
+      
+    }
+  })
+</script>

@@ -1,0 +1,139 @@
+<style scoped>
+  .__CSSPRENAME__{
+    
+  }
+</style>
+
+<script type="text/html">
+  <div class="KimHead __CSSPRENAME__">
+    <div class="KimHead-c">
+      <div class="j-common-fl">
+        <div class="KimHead-logo j-common-fl">
+          <span class="fas fa-paw"></span>
+        </div>
+  
+        <div class="KimHead-menu GLOBAL-hiddenlist j-common-fl">
+          <span class="KimHead-menu-btn">
+            <span class="fas fa-box-open"></span> 应用菜单
+          </span>
+          <div class="GLOBAL-hiddenlistitem bottom">
+            <div v-for="(item,key) in menuList" :key="key">
+              <div v-if="!item.unshow" class="KimHead-myapp">
+                <div class="KimHead-myapp-title">{{ item.title }}</div>
+                <div class="KimHead-myapp-list">
+                  <div class="KimHead-myapp-item" v-for="(sitem,sindex) in item.children" :key="sindex">
+                    <div class="KimHead-myapp-item-c" @click="$RootApp.F_openWin(sitem)">
+                      <span class="KimHead-myapp-item-a">
+                        <span :class="sitem.icon"></span> {{ sitem.name }}
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <a class="KimHead-menu j-common-fl" onclick="Aloader(this)" data-url="my/application.html" data-icon="fas fa-box" target="_blank">
+          <span class="KimHead-menu-btn">
+            <span class="fas fa-box"></span> 首页
+          </span>
+        </a>
+  
+        <div class="KimHead-search">
+          <input type="text" maxlength="15" name="" placeholder="搜索应用" autocomplete="off">
+          <span class="fas fa-search KimHead-search-icon"></span>
+          <span class="fas fa-times-circle KimHead-search-icon" style="right: .28rem; display: none; cursor: pointer;"></span>
+          <div id="INDEXRENDER-SEARCH-RESULT" class="KimHead-search-result"></div>
+        </div>
+      </div>
+  
+      <div class="j-common-fr KimHead-usercp">
+        <div class="GLOBAL-hiddenlist">
+  
+          <div class="KimHead-userinfo">
+            <span class="KimHead-username" id="DATA-INDEX-USERNAME"></span>
+            <span class="KimHead-userinfo-d"></span>
+            <span class="KimHead-avatar" id="DATA-INDEX-AVATAR"></span>
+          </div>
+  
+          <div class="GLOBAL-hiddenlistitem bottom right">
+            <a class="KimHead-usercp-A" onclick="Aloader(this)" data-url="my/userinfo.html" target="_blank">
+              <span class="fas fa-user"></span> 账号信息
+            </a>
+            <a class="KimHead-usercp-A" onclick="Aloader(this)" data-url="my/editpwd.html" target="_blank">
+              <span class="fas fa-key"></span> 修改密码
+            </a>
+            <a class="KimHead-usercp-A" onclick="Fnlogout()">
+              <span class="fas fa-power-off"></span> 退出
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    inject:['getApp','App'],
+    
+    data(){
+      return {
+        menuList:{
+          0:{
+            id:0,
+            name:'首页',
+            url:'main/index',
+            icon:'fas fa-paw',
+            unshow:true
+          },
+          
+          100:{
+            id:100,
+            name:'资源',
+            children:[
+              {id:101,name:'片子',url:'source/index',icon:'fab fa-algolia'},
+              {id:102,name:'测试标题匹配1',url:'test/pagetest',icon:'fab fa-algolia'},
+              {id:103,name:'测试标题匹配2',url:'test/pagetest2',icon:'fab fa-algolia'}
+            ]
+          },
+          
+          200:{
+            id:100,
+            name:'资源',
+            children:[
+              {id:101,name:'片子',url:'source/index',icon:'fab fa-algolia'}
+            ]
+          }
+        }
+      }
+    },
+    
+    mounted() {
+      // 菜单数据同步共享
+      const menuList = {}
+      
+      for(let i in this.menuList){
+        menuList[i] = this.menuList[i]
+        
+        if(this.menuList[i].children){
+          this.menuList[i].children.map((item,index) => {
+            item.parent = this.menuList[i]
+            menuList[item.id] = item
+          })
+        }
+      }
+      this.$store.commit('stateUpdate',{
+        menuList:menuList
+      })
+    },
+    
+    methods:{
+      
+    }
+  })
+</script>

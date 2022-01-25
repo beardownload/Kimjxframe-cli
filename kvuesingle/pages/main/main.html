@@ -1,0 +1,163 @@
+<script type="text/html">
+  <div class="__CSSPRENAME__">
+    <!-- 页面容器 -->
+    <keep-alive>
+      <component v-if="route.ext.keepAlive" v-bind:is="componentUrl"></component>
+    </keep-alive>
+    
+    <component v-if="!route.ext.keepAlive" v-bind:is="componentUrl"></component>
+
+    <__PATH__-common K-VUE-COMPONENT />
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    data(){
+      return {
+        componentUrl:'',
+        
+        roterConfig:<K-FILE file="./routers" />,
+        
+        // 当前路由对象
+        route:{
+          path:'',
+          fullPath:'',
+          query:{},
+          ext:{}
+        },
+        
+        // 进行keepAlive的对象列表
+        routerKeepAlive:{},
+        
+        // 路由对象
+        router:{
+          // 获取 keepalive 数据
+          getKeepAlive:(path)=>{
+            if(!path){
+              path = this.route.path
+            }
+            
+            const result = this.routerKeepAlive[path]
+            delete this.routerKeepAlive[path]
+            return result || false
+          },
+          
+          // 当前页面打开
+          push:(url,keepAlive = false)=>{
+            if(keepAlive){
+              this.routerKeepAlive[this.route.path] = true
+            }
+            
+            location.href = '#' + url
+          },
+          
+          // 前进
+          forward:()=>{
+            history.forward()
+          },
+          
+          // 跳转到
+          go:(index = 1)=>{
+            history.go(index)
+          },
+          
+          // 返回
+          back:()=>{
+            history.back()
+          },
+          
+          // 当前页变到页面
+          replace:(url)=>{
+            location.replace('#' + url)
+          },
+          
+          // 新窗口打开
+          open:(url)=>{
+            window.open('#' + url)
+          }
+        }
+      }
+    },
+    
+    computed:mapState({
+
+    }),
+    
+    watch:{
+      'route.path'(newV){
+        this.F_routerDeal(newV)
+        this.F_updateKeeplive()
+      }
+    },
+
+    beforeMount() {
+      this.routerKeepAlive = JSON.parse(localStorage['routerKeepAlive'])
+      
+      // 定义路由对象
+      Vue.prototype.$router = this.router
+      Vue.prototype.$route = this.route
+    },
+
+    mounted(){
+      console.log(this.roterConfig)
+      
+      // 注册路由监听
+      KJ.Fnregistevent('hashchange',(data)=>{
+        this.F_hashChange(data)
+      })
+      
+      KJ.Fnhashchange()
+    },
+
+    methods:{
+      // 更新缓存页面数据
+      F_updateKeeplive(){
+        localStorage['routerKeepAlive'] = JSON.stringify(this.routerKeepAlive)
+      },
+      
+      // 路由监听
+      F_hashChange(data){
+        // console.log('路由监听',data)
+        
+        const routerInfo = data.hash
+        
+        const fullPathInfo = routerInfo.rawURL.split('#')
+        
+        this.route.path     = routerInfo.page
+        this.route.fullPath = fullPathInfo.length > 1 ? fullPathInfo[1] : routerInfo.page
+        this.route.query    = routerInfo.GET
+        
+        this.F_loadPage()
+      },
+      
+      // 路由处理
+      F_routerDeal(newV){
+        // if(!this.roterConfig[newV]){
+        //   return
+        // }
+        
+        const route = this.roterConfig[newV] || {}
+        this.route.ext = route
+        
+        console.log('路由监听',newV,route)
+        
+        document.title = route.title || ''
+      },
+      
+      // 加载页面
+      F_loadPage(){
+        const url = this.route.path
+        
+        this.$Common.showLoading(true)
+        
+        Kim.VUE_loadComponent(url,()=>{
+          this.componentUrl = Kim.VUE_RouterPathDeal(url)
+          this.$Common.showLoading(false)
+        })
+      }
+    }
+  });
+</script>

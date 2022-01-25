@@ -1,0 +1,290 @@
+<style scoped>
+  .__CSSPRENAME__{
+    .bk-show{
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: url(static/img/bkt.svg) no-repeat center center;
+      background-size: cover;
+    }
+    
+    .left-menu{
+      position: absolute;
+      left: 0;
+      top: .5rem;
+      bottom: 0;
+      width: 2rem;
+      z-index: 2;
+    }
+    
+    .pagecontainer{
+      position: absolute;
+      top: .5rem;
+      bottom: 0;
+      left: 2rem;
+      right: 0;
+      min-width: 12rem;
+      z-index: 1;
+      
+      .container{
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow:auto;
+      }
+    }
+  }
+</style>
+
+<script type="text/html">
+  <div class="__CSSPRENAME__">
+    <div class="bk-show"></div>
+    
+    <!-- 左侧菜单 -->
+    <div class="left-menu">
+      <__PATH__-leftmenu @closewin="F_closeWin" K-VUE-COMPONENT />
+    </div>
+    
+    <!-- 页面容器 -->
+    <div class="pagecontainer">
+      <div class="container">
+        <__PATH__-pagecontainer
+          v-for="(item,key) in appList"
+          :key="key"
+          :app="item"
+          K-VUE-COMPONENT
+          v-show="appActive == item.appid"
+          @updatesession="F_updateSession"
+          @closewin="F_closeWin"
+        />
+      </div>
+    </div>
+    
+    <__PATH__-header K-VUE-COMPONENT />
+    <__PATH__-common K-VUE-COMPONENT />
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    provide(){
+      return {
+        // 下级获取顶级对象
+        RootApp(){
+          return this
+        }
+      }
+    },
+    
+    data(){
+      return {
+        // 页面ID
+        appActive: -1,
+        
+        // 页面列表
+        appList:{},
+        
+        appCount:0,
+        
+        // 默认主页地址
+        defaultUrl: KJ.CONFIG.defaultpage
+      }
+    },
+    
+    computed:mapState({
+      // 获取当前的激活窗口
+      sessionAppActive(state){
+        return state.sessionData.appActive
+      },
+      
+      // 会话列表
+      sessionAppList(state){
+        return state.sessionData.appList
+      },
+      
+      // 菜单数据
+      menuList:'menuList'
+    }),
+    
+    watch:{
+      // 监听应用列表
+      appList(){
+        // console.log('应用列表发生改变')
+      }
+    },
+
+    beforeMount() {
+      
+    },
+
+    mounted(){
+      Vue.prototype.$RootApp = this
+      
+      // console.log(this)
+      for(let i in this.sessionAppList){
+        this.$set(this.appList,this.sessionAppList[i].appid,this.sessionAppList[i])
+        this.appCount++
+        this.appActive = this.sessionAppActive
+      }
+      
+      if(this.appCount <= 0){
+        setTimeout(()=>{
+          this.F_openWin()
+        },500)
+      }
+      
+      // 菜单初始化位置处理
+      setTimeout(()=>{
+        // console.log(this)
+        this.$leftmenu.F_updateMenuSwiper()
+      },1000)
+    },
+
+    methods:{
+      // 切换激活窗口
+      F_setAppActive(appid){
+        this.appActive = appid
+        this.F_updateSession()
+      },
+      
+      // 关闭窗口
+      F_closeWin(appid = false){
+        if(!appid){
+          appid = this.appActive
+        }
+        
+        // console.log('删除app',appid)
+        
+        // 遍历处理上下appid
+        let nextAppid = false
+        let lastAppid = false
+        let checkAppid = false
+        for(let i in this.appList){
+          if(i == appid){
+            checkAppid = true
+          }else{
+            if(checkAppid){
+              nextAppid = i
+            }else{
+              lastAppid = i
+            }
+          }
+        }
+        
+        // console.log(nextAppid,lastAppid)
+        
+        if(checkAppid){
+          this.$delete(this.appList,appid)
+          this.appCount--
+          
+          if(appid == this.appActive){
+            if(nextAppid){
+              this.appActive = nextAppid
+            }else if(lastAppid){
+              this.appActive = lastAppid
+            }
+          }
+
+          // 关闭了所有打开默认页
+          if(this.appCount <= 0){
+            this.F_openWin()
+          }
+          
+          this.F_updateSession()
+        }
+      },
+      
+      // url打开窗口
+      F_getMenuItemByUrl(url){
+        const path = url.split('?')[0]
+        
+        if(!url){
+          return this.menuList[0]
+        }
+        
+        let menuItem = false
+        
+        for(let i in this.menuList){
+          if(this.menuList[i].url && path == this.menuList[i].url){
+            menuItem = this.menuList[i]
+          }
+        }
+        
+        if(menuItem){
+          return menuItem
+        }
+        
+        // 不存在 则返回临时组装菜单
+        return {
+          id: -1,
+          name: '默认标题',
+          url: path,
+          icon:'fas fa-paw'
+        }
+      },
+      
+      // 打开新窗口
+      F_openWin(url = '',open = true){
+        let type = 'url'
+        let menuItem
+        if(typeof(url) === typeof({})){
+          menuItem = url
+          type = 'object'
+        }else{
+          menuItem = this.F_getMenuItemByUrl(url)
+        }
+        
+        // console.log('common',this.$Common)
+        
+        const app = {
+          appid: new Date().getTime(),
+          icon:menuItem.icon,
+          menuId:1,
+          // 'test/pagetest',
+          url: menuItem.url || this.defaultUrl,
+          fullpath:type === 'url' ? url : menuItem.url,
+          name:menuItem.name,
+          
+          // 页面缓存
+          sessionCache:{},
+          // url参数
+          GET:this.$Common.kgetUrlinfo(type === 'url' ? url : menuItem.url),
+          
+          // location路由对象数据
+          historyIndex:0,
+          history:[],
+          
+          // 定时任务自动处理
+          setTimeoutTime:{},
+          setIntervalTime:{}
+        }
+        
+        // 设置初始化历史记录
+        app.history.push(app.url)
+        
+        this.$set(this.appList,app.appid,app)
+        this.appCount++
+        if(open){
+          this.appActive = app.appid
+        }
+        
+        this.F_updateSession()
+      },
+      
+      // 更新本地页面数据
+      F_updateSession(){
+        // console.log('更新页面session数据')
+        this.$store.commit('setSessionData',{
+          // 当前激活的页面ID
+          appActive:this.appActive,
+          // 页面数据列表
+          appList:this.appList
+        })
+      }
+    }
+  });
+</script>

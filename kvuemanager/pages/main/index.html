@@ -1,0 +1,180 @@
+<style>
+
+</style>
+
+<script type="text/html">
+  <div class="j-common-container-p">
+    <div class="j-common-searchform">
+      <table class="j-table">
+        <tbody>
+          <tr>
+            <td style="width: 15%;">
+              <el-input v-model="searchform.value1" placeholder="请输入内容" clearable></el-input>
+            </td>
+            <td style="width: .5%;"></td>
+            
+            <td style="width: 15%;">
+              <el-select v-model="searchform.select1" placeholder="请选择">
+                <el-option
+                  v-for="item in data.options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </td>
+            <td style="width: .5%;"></td>
+            
+            <td style="width: 15%;">
+              <el-date-picker
+                v-model="searchform.timerange"
+                type="datetimerange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期">
+              </el-date-picker>
+            </td>
+            <td style="width: .5%;"></td>
+
+            <td>
+              <a class="j-btn j-btn-blue">
+                搜索
+              </a>
+            </td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="j-common-hfixed-10"></div>
+    
+    <div class="j-common-container">
+      <el-table
+        :data="data.tableData"
+        style="width: 100%">
+        <el-table-column
+          prop="date"
+          label="日期"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="name"
+          label="姓名"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="address"
+          label="地址">
+        </el-table-column>
+      </el-table>
+      
+      <div>
+        <a class="j-btn j-btn-blue j-btn-normal" @click="$RootApp.F_openWin('test/pagetest2')">自定义按钮</a>
+        <a @click="$RootApp.F_openWin('test/pagetest')">打开新窗口页面</a>
+      </div>
+      
+      <el-row>
+        <el-button @click="getApp().url = 'test/pagetest'">当前链接跳转</el-button>
+        <el-button @click="App().F_historyGo()" type="primary">前进一个页面</el-button>
+        <el-button type="success">成功按钮</el-button>
+        <el-button type="info">信息按钮</el-button>
+        <el-button type="warning">警告按钮</el-button>
+        <el-button type="danger">危险按钮</el-button>
+      </el-row>
+      
+      <el-row>
+        <el-button plain>朴素按钮</el-button>
+        <el-button type="primary" plain>主要按钮</el-button>
+        <el-button type="success" plain>成功按钮</el-button>
+        <el-button type="info" plain>信息按钮</el-button>
+        <el-button type="warning" plain>警告按钮</el-button>
+        <el-button type="danger" plain>危险按钮</el-button>
+      </el-row>
+      
+      <el-row>
+        <el-button round>圆角按钮</el-button>
+        <el-button type="primary" round>主要按钮</el-button>
+        <el-button type="success" round>成功按钮</el-button>
+        <el-button type="info" round>信息按钮</el-button>
+        <el-button type="warning" round>警告按钮</el-button>
+        <el-button type="danger" round>危险按钮</el-button>
+      </el-row>
+      
+      <el-row>
+        <el-button icon="el-icon-search" circle></el-button>
+        <el-button type="primary" icon="el-icon-edit" circle></el-button>
+        <el-button type="success" icon="el-icon-check" circle></el-button>
+        <el-button type="info" icon="el-icon-message" circle></el-button>
+        <el-button type="warning" icon="el-icon-star-off" circle></el-button>
+        <el-button type="danger" icon="el-icon-delete" circle></el-button>
+      </el-row>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    inject:['getApp','App'],
+    
+    data(){
+      return {
+        value1:'',
+        
+        searchform:{
+          value1:'',
+          
+          select1:'',
+          
+          timerange:[],
+          
+          page:1,
+          pagesize:10
+        },
+        
+        data:{
+          tableData:[],
+          
+          options:[
+            {label:'11111',value:'1'},
+            {label:'22222',value:'2'},
+            {label:'33333',value:'3'}
+          ]
+        }
+      }
+    },
+    
+    computed:{
+      
+    },
+    
+    mounted() {
+      // setTimeout(()=>{
+      //   // console.log()
+      //   this.getApp().sessionCache = this.searchform
+      // },1000)
+      const sessionCache = this.getApp().sessionCache
+      
+      for(let i in sessionCache){
+        this.searform[i] = sessionCache[i]
+      }
+    },
+    
+    methods:{
+      F_searchData(){
+        
+      },
+      
+      // 禁用日期
+      F_diabled(date){
+        const dateTime = date.getTime()
+        
+        // console.log(date)
+        
+        return false
+      }
+    }
+  })
+</script>

@@ -1,0 +1,76 @@
+<script type="text/html">
+  <div ref="windowBTN" :class="appActive == item.appid ? 'KimBodycontroll-Menu active' : 'KimBodycontroll-Menu'">
+    <div class="KimBodycontroll-Menu-c" @click="$RootApp.F_setAppActive(item.appid)">
+      <div class="KimBodycontroll-Menu-icon">
+        <div class="KimBodycontroll-Menu-icon-bk2">
+          <span :class="'KimBodycontroll-Menu-iconbk ' + item.icon"></span>
+        </div>
+      </div>
+      <div class="KimBodycontroll-Menu-title" :title="item.name || ''">{{ item.name }}</div>
+    </div>
+    
+    <div class="KimBodycontroll-Menu-btns">
+      <div class="KimBodycontroll-shutdown" @click="F_closeWin">
+        <span class="fas fa-times"></span>
+      </div>
+      <div class="KimBodycontroll-refresh" @click="F_refresh">
+        <span class="fas fa-sync-alt"></span>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    props:['item'],
+    
+    inject:[],
+    
+    data(){
+      return {
+        appActive:''
+      }
+    },
+    
+    computed:mapState({
+      // 获取当前的激活窗口
+      sessionAppActive(state){
+        return state.sessionData.appActive
+      },
+    }),
+    
+    watch:{
+      // 监听当前激活的appid
+      sessionAppActive(newV){
+        setTimeout(()=>{
+          this.appActive = newV
+        },100)
+      }
+    },
+    
+    mounted() {
+      setTimeout(()=>{
+        // console.log('页面对象',this.item,Kim.App[this.item.appid])
+        // 绑定页面
+        Kim.App[this.item.appid].$menu = this
+        
+        // 激活动画
+        this.appActive = this.sessionAppActive
+      },100)
+    },
+    
+    methods:{
+      // 关闭窗口
+      F_closeWin(){
+        Kim.App[this.item.appid].F_closeWin()
+      },
+      
+      // 刷新页面
+      F_refresh(){
+        Kim.App[this.item.appid].F_refreshPage()
+      }
+    }
+  });
+</script>

@@ -1,0 +1,40 @@
+<style>
+  .__CSSPRENAME__{
+    .test{
+      padding: .1rem 0;
+    }
+  }
+</style>
+
+<script type="text/html">
+  <div class="__CSSPRENAME__">
+    测试页面1111111111
+    
+    <div class="test">
+      <a @click="getApp().url = 'test/pagetest2'">当前页面跳转</a>
+    </div>
+    
+    <div class="test">
+      <el-button @click="App().F_closeWin()">关闭窗口</el-button>
+      <a @click="F_jumpUrl">test</a>
+    </div>
+    
+    <div class="test">
+      <a @click="App().F_historyBack()">返回上一页面</a>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component(__COMPONENT__, {
+    template:__TEMPLATE__,
+    
+    inject:['getApp','App'],
+    
+    methods:{
+      F_jumpUrl(){
+        console.log(this.getApp(),this)
+      }
+    }
+  })
+</script>
