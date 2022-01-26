@@ -25,9 +25,7 @@
     },
     
     initCheck:function(callback){
-      console.log(LessApp.lessApp)
       if(LessApp.lessApp){
-        console.log('2222222222233333333')
         callback();
       }else{
         setTimeout(function(){
@@ -53,7 +51,7 @@
       LessApp.initCheck(function(){
         window.less.render(style,LessApp.lessRenderConfig).then(function(result){
           var cssResult = LessApp.px2Rem ? APP.px2remApp.render(result.css) : result.css
-          console.log(cssResult)
+          // console.log(cssResult)
           
           callback(cssResult)
         }).catch(function(err){
